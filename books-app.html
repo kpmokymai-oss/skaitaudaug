@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="lt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📚 Mano Skaitymas - Knygų Registro Sistema</title>
+    <style>
+        :root {
+            --primary: #8B6F47;
+            --primary-light: #A89066;
+            --accent: #D4A574;
+            --dark: #2C2416;
+            --light: #FAF7F2;
+            --success: #6B9E5C;
+            --error: #C95A5A;
+            --border: #E8DCC8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            background: linear-gradient(135deg, #FBF8F3 0%, #F5EFEB 100%);
+            color: var(--dark);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(139, 111, 71, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(212, 165, 116, 0.05) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin: 40px 0 30px;
+            animation: fadeInDown 0.8s ease;
+        }
+
+        header h1 {
+            font-size: 3em;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-weight: normal;
+            letter-spacing: 2px;
+        }
+
+        header p {
+            color: var(--primary-light);
+            font-size: 1.1em;
+            font-style: italic;
+        }
+
+        /* Auth Screens */
+        .auth-container {
+            max-width: 400px;
+            margin: 60px auto;
+            background: white;
+            padding: 50px 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(44, 36, 22, 0.1);
+            animation: slideInUp 0.6s ease;
+        }
+
+        .auth-form h2 {
+            text-align: center;
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-size: 1.8em;
+            font-weight: normal;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 500;
+            font-size: 0.95em;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Georgia', serif;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: linear-gradient(to bottom, transparent, rgba(139, 111, 71, 0.02));
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        button {
+            flex: 1;
+            padding: 13px 20px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Georgia', serif;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(139, 111, 71, 0.2);
+        }
+
+        .btn-secondary {
+            background: var(--light);
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b84949;
+        }
+
+        .toggle-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .toggle-link button {
+            background: none;
+            border: none;
+            color: var(--primary-light);
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+            font-size: 0.95em;
+        }
+
+        .toggle-link button:hover {
+            color: var(--primary);
+        }
+
+        /* Main Dashboard */
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(44, 36, 22, 0.08);
+        }
+
+        .user-info {
+            font-size: 1.1em;
+        }
+
+        .user-info strong {
+            color: var(--primary);
+        }
+
+        .badge {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(44, 36, 22, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(44, 36, 22, 0.15);
+        }
+
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            font-weight: normal;
+            border-bottom: 3px solid var(--accent);
+            padding-bottom: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 7px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 0.95em;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-family: 'Georgia', serif;
+            font-size: 0.95em;
+            transition: all 0.3s;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(139, 111, 71, 0.02);
+        }
+
+        .books-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .books-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .books-list::-webkit-scrollbar-track {
+            background: var(--light);
+            border-radius: 10px;
+        }
+
+        .books-list::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
+        .book-item {
+            background: linear-gradient(135deg, #FFFBF7 0%, #FFF7F0 100%);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+            animation: slideInLeft 0.4s ease;
+        }
+
+        .book-item:hover {
+            background: linear-gradient(135deg, #FFFAF5 0%, #FFF5EC 100%);
+            transform: translateX(5px);
+        }
+
+        .book-info {
+            flex: 1;
+        }
+
+        .book-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 5px;
+            font-size: 1em;
+        }
+
+        .book-details {
+            color: var(--primary-light);
+            font-size: 0.85em;
+        }
+
+        .book-pages {
+            background: var(--primary);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin-right: 10px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .btn-delete {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s;
+        }
+
+        .btn-delete:hover {
+            background: #b84949;
+            transform: scale(1.05);
+        }
+
+        /* Admin Dashboard */
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .admin-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .stat-box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(44, 36, 22, 0.08);
+            border-top: 5px solid var(--primary);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            color: var(--primary);
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: var(--primary-light);
+            font-size: 0.95em;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(44, 36, 22, 0.08);
+        }
+
+        .admin-table th {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .admin-table td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .admin-table tr:hover {
+            background: var(--light);
+        }
+
+        .admin-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--primary-light);
+        }
+
+        .empty-state p {
+            font-size: 1.1em;
+            margin-top: 15px;
+        }
+
+        /* Alert */
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            animation: slideInDown 0.4s ease;
+        }
+
+        .alert-success {
+            background: #E8F5E9;
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        .alert-error {
+            background: #FFEBEE;
+            color: var(--error);
+            border-left: 4px solid var(--error);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            color: var(--primary-light);
+            font-family: 'Georgia', serif;
+            font-size: 1em;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Georgia', serif;
+            margin-bottom: 20px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📚 Mano Skaitymas</h1>
+            <p>Jūsų knygų registro ir skaitymo statistikos sistema</p>
+        </header>
+
+        <!-- Login Screen -->
+        <div id="loginScreen" class="auth-container">
+            <form class="auth-form" id="loginForm">
+                <h2>Prisijungti</h2>
+                <div id="loginAlert"></div>
+                <div class="form-group">
+                    <label for="loginUsername">Naudotojo vardas</label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Slaptažodis</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Prisijungti</button>
+                </div>
+                <div class="toggle-link">
+                    <button type="button" onclick="toggleAuth()">Nėra paskyros? Susikurti</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Register Screen -->
+        <div id="registerScreen" class="auth-container" style="display: none;">
+            <form class="auth-form" id="registerForm">
+                <h2>Susikurti Paskyrą</h2>
+                <div id="registerAlert"></div>
+                <div class="form-group">
+                    <label for="registerUsername">Naudotojo vardas</label>
+                    <input type="text" id="registerUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Slaptažodis</label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">El. paštas</label>
+                    <input type="email" id="registerEmail" required>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">Sukurti Paskyrą</button>
+                </div>
+                <div class="toggle-link">
+                    <button type="button" onclick="toggleAuth()">Jau turite paskyrą? Prisijunkite</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- User Dashboard -->
+        <div id="userDashboard" class="dashboard">
+            <div class="header-bar">
+                <div class="user-info">
+                    👤 <strong id="currentUsername"></strong>
+                    <span class="badge">Naudotojas</span>
+                </div>
+                <button class="btn-secondary" onclick="logout()">Atsijungti</button>
+            </div>
+
+            <div class="main-content">
+                <!-- Add Book Form -->
+                <div class="card">
+                    <h2>➕ Pridėti Knygą</h2>
+                    <form id="bookForm">
+                        <div class="form-group">
+                            <label for="bookTitle">Knygos pavadinimas</label>
+                            <input type="text" id="bookTitle" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bookAuthor">Autorius</label>
+                            <input type="text" id="bookAuthor" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bookPages">Puslapių skaičius</label>
+                            <input type="number" id="bookPages" min="1" required>
+                        </div>
+                        <button type="submit" class="btn-primary">Pridėti Knygą</button>
+                    </form>
+                </div>
+
+                <!-- Books Statistics -->
+                <div class="card">
+                    <h2>📊 Jūsų Statistika</h2>
+                    <div id="userStats">
+                        <p style="text-align: center; color: var(--primary-light);">Dar nėra pridėtų knygų</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Books List -->
+            <div class="card">
+                <h2>📖 Mano Perskaitytos Knygos</h2>
+                <div id="userBooks" class="books-list">
+                    <div class="empty-state">
+                        <p>Pradėkite pridėdami pirminę knygą! 📚</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="adminDashboard" class="dashboard">
+            <div class="header-bar">
+                <div class="user-info">
+                    👨‍💼 <strong id="adminUsername"></strong>
+                    <span class="badge" style="background: var(--error);">Administratorius</span>
+                </div>
+                <button class="btn-secondary" onclick="logout()">Atsijungti</button>
+            </div>
+
+            <div class="admin-stats">
+                <div class="stat-box">
+                    <div class="stat-label">Bendras Naudotojų Skaičius</div>
+                    <div class="stat-number" id="totalUsers">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Bendras Knygų Skaičius</div>
+                    <div class="stat-number" id="totalBooks">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Iš viso Puslapių</div>
+                    <div class="stat-number" id="totalPages">0</div>
+                </div>
+            </div>
+
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchAdminTab('statistics')">📊 Statistika</button>
+                <button class="tab-button" onclick="switchAdminTab('report')">📋 Ataskaita</button>
+                <button class="tab-button" onclick="switchAdminTab('users')">👥 Naudotojai</button>
+                <button class="tab-button" onclick="switchAdminTab('all-books')">📚 Knygos</button>
+                <button class="tab-button" onclick="switchAdminTab('export')">💾 Eksportas</button>
+            </div>
+
+            <!-- Statistics Tab -->
+            <div id="statisticsTab" class="tab-content active card">
+                <h2>📊 Sistemos Statistika</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                    <div style="background: linear-gradient(135deg, #FFF8F0 0%, #FFE8D6 100%); padding: 20px; border-radius: 10px; border-left: 5px solid var(--primary);">
+                        <div style="font-size: 2.5em; color: var(--primary); font-weight: bold;">📚</div>
+                        <div style="color: var(--primary-light); margin-top: 10px;">Bendras Knygų Skaičius</div>
+                        <div style="font-size: 2em; color: var(--primary); font-weight: bold; margin-top: 10px;" id="statTotalBooks">0</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #FFF0F7 0%, #FFD6E8 100%); padding: 20px; border-radius: 10px; border-left: 5px solid #D4A574;">
+                        <div style="font-size: 2.5em; color: #D4A574;">📖</div>
+                        <div style="color: #A89066; margin-top: 10px;">Bendras Puslapių Skaičius</div>
+                        <div style="font-size: 2em; color: #D4A574; font-weight: bold; margin-top: 10px;" id="statTotalPages">0</div>
+                    </div>
+                </div>
+
+                <h3 style="color: var(--primary); margin: 30px 0 20px 0; font-size: 1.3em;">🏆 Top 10 Skaitytojai (Lyderių Lentelė)</h3>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align: center;">🥇</th>
+                            <th>Naudotojas</th>
+                            <th style="text-align: center;">Perskaitytos Knygos</th>
+                            <th style="text-align: center;">Iš viso Puslapių</th>
+                            <th style="text-align: center;">Vidutinė Knyga</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topReadersBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--primary-light);">Nėra duomenų</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Report Tab -->
+            <div id="reportTab" class="tab-content active card">
+                <h2>📋 Skaitymo Ataskaita</h2>
+                <input type="text" id="searchUsers" class="search-input" placeholder="Ieškoti naudotojo...">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Naudotojas</th>
+                            <th>El. Paštas</th>
+                            <th>Perskaitytos Knygos</th>
+                            <th>Iš viso Puslapių</th>
+                            <th>Vidutinis Puslapių Skaičius</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--primary-light);">Nėra duomenų</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Users Tab -->
+            <div id="usersTab" class="tab-content card" style="display: none;">
+                <h2>👥 Naudotojų Sąrašas</h2>
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Naudotojo Vardas</th>
+                            <th>El. Paštas</th>
+                            <th>Registracijos Data</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersBody">
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: var(--primary-light);">Nėra duomenų</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- All Books Tab -->
+            <div id="allBooksTab" class="tab-content card" style="display: none;">
+                <h2>📚 Visos Sistemos Knygos</h2>
+                <input type="text" id="searchBooks" class="search-input" placeholder="Ieškoti knygos arba autoriaus...">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Knygos Pavadinimas</th>
+                            <th>Autorius</th>
+                            <th>Naudotojas</th>
+                            <th>Puslapiai</th>
+                        </tr>
+                    </thead>
+                    <tbody id="allBooksBody">
+                        <tr>
+                            <td colspan="4" style="text-align: center; color: var(--primary-light);">Nėra duomenų</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Export Tab -->
+            <div id="exportTab" class="tab-content card" style="display: none;">
+                <h2>💾 Duomenų Eksportas</h2>
+                <p style="color: var(--primary-light); margin-bottom: 20px;">Eksportuokite sistemos duomenis į Excel formatą analitiką ir ataskaitoms.</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div style="background: linear-gradient(135deg, #FFF8F0 0%, #FFE8D6 100%); padding: 25px; border-radius: 10px; border-left: 5px solid var(--primary);">
+                        <h3 style="color: var(--primary); margin-bottom: 15px; font-size: 1.1em;">📊 Detali Ataskaita</h3>
+                        <p style="color: var(--primary-light); font-size: 0.9em; margin-bottom: 15px;">Kiekvieno naudotojo skaitymo statistika ir analizė</p>
+                        <button class="btn-primary" onclick="exportToExcel('detailed')" style="width: 100%; padding: 12px;">⬇️ Parsisiųsti Ataskaitą</button>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, #F0FFF8 0%, #D6FFE8 100%); padding: 25px; border-radius: 10px; border-left: 5px solid var(--success);">
+                        <h3 style="color: var(--success); margin-bottom: 15px; font-size: 1.1em;">🏆 Lyderiai</h3>
+                        <p style="color: #6B9E5C; font-size: 0.9em; margin-bottom: 15px;">Top skaitytojai ir jų pasieki...</p>
+                        <button class="btn-primary" style="width: 100%; padding: 12px; background: var(--success);" onclick="exportToExcel('leaders')">⬇️ Parsisiųsti Lyderius</button>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, #FFF0F7 0%, #FFD6E8 100%); padding: 25px; border-radius: 10px; border-left: 5px solid #D4A574;">
+                        <h3 style="color: #D4A574; margin-bottom: 15px; font-size: 1.1em;">📚 Visos Knygos</h3>
+                        <p style="color: #A89066; font-size: 0.9em; margin-bottom: 15px;">Pilnas sistemos knygų katalogas su naudotojais</p>
+                        <button class="btn-primary" style="width: 100%; padding: 12px; background: #D4A574;" onclick="exportToExcel('books')">⬇️ Parsisiųsti Knygas</button>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, #F0F7FF 0%, #D6E8FF 100%); padding: 25px; border-radius: 10px; border-left: 5px solid #7B9FD6;">
+                        <h3 style="color: #7B9FD6; margin-bottom: 15px; font-size: 1.1em;">👥 Visi Naudotojai</h3>
+                        <p style="color: #6082AD; font-size: 0.9em; margin-bottom: 15px;">Sistemos naudotojų sąrašas su kontaktų duomenimis</p>
+                        <button class="btn-primary" style="width: 100%; padding: 12px; background: #7B9FD6;" onclick="exportToExcel('users')">⬇️ Parsisiųsti Naudotojus</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 30px; padding: 20px; background: var(--light); border-radius: 10px; border-left: 5px solid #FFC107;">
+                    <h3 style="color: var(--primary); margin-bottom: 10px;">💡 Žinynas</h3>
+                    <ul style="color: var(--primary-light); line-height: 1.8; margin-left: 20px;">
+                        <li><strong>Detali Ataskaita:</strong> Sąrašo su kiekvieno naudotojo perskaitytas knygas, puslapius ir statistiką</li>
+                        <li><strong>Lyderiai:</strong> Top 10 skaitytojai pagal perskaitytas knygas ir puslapius</li>
+                        <li><strong>Visos Knygos:</strong> Pilnas sistemos knygų katalogas</li>
+                        <li><strong>Naudotojai:</strong> Registruotų naudotojų kontaktų duomenys</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ========== DATA MANAGEMENT ==========
+        const USERS_KEY = 'users';
+        const CURRENT_USER_KEY = 'currentUser';
+        const ADMIN_USERNAME = 'admin';
+        const ADMIN_PASSWORD = 'admin123';
+
+        let allUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || {};
+        let currentUser = JSON.parse(localStorage.getItem(CURRENT_USER_KEY)) || null;
+
+        // Initialize admin account
+        if (!allUsers[ADMIN_USERNAME]) {
+            allUsers[ADMIN_USERNAME] = {
+                username: ADMIN_USERNAME,
+                password: ADMIN_PASSWORD,
+                email: 'admin@bookregistry.lt',
+                isAdmin: true,
+                books: [],
+                registeredDate: new Date().toISOString()
+            };
+            saveUsers();
+        }
+
+        function saveUsers() {
+            localStorage.setItem(USERS_KEY, JSON.stringify(allUsers));
+        }
+
+        function saveCurrentUser() {
+            localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(currentUser));
+        }
+
+        // ========== AUTH FUNCTIONS ==========
+        function toggleAuth() {
+            document.getElementById('loginScreen').style.display = 
+                document.getElementById('loginScreen').style.display === 'none' ? 'block' : 'none';
+            document.getElementById('registerScreen').style.display = 
+                document.getElementById('registerScreen').style.display === 'none' ? 'block' : 'none';
+        }
+
+        function showAlert(elementId, message, type) {
+            const alert = document.getElementById(elementId);
+            alert.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+            setTimeout(() => { alert.innerHTML = ''; }, 4000);
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (allUsers[username] && allUsers[username].password === password) {
+                currentUser = allUsers[username];
+                saveCurrentUser();
+                showDashboard();
+            } else {
+                showAlert('loginAlert', '❌ Neteisingas naudotojo vardas arba slaptažodis', 'error');
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const email = document.getElementById('registerEmail').value;
+
+            if (allUsers[username]) {
+                showAlert('registerAlert', '❌ Šis naudotojo vardas jau naudojamas', 'error');
+                return;
+            }
+
+            allUsers[username] = {
+                username,
+                password,
+                email,
+                isAdmin: false,
+                books: [],
+                registeredDate: new Date().toISOString()
+            };
+            saveUsers();
+            currentUser = allUsers[username];
+            saveCurrentUser();
+            showAlert('registerAlert', '✅ Paskyra sėkmingai sukurta!', 'success');
+            setTimeout(() => showDashboard(), 1500);
+        });
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem(CURRENT_USER_KEY);
+            document.getElementById('loginScreen').style.display = 'block';
+            document.getElementById('registerScreen').style.display = 'none';
+            document.getElementById('userDashboard').classList.remove('active');
+            document.getElementById('adminDashboard').classList.remove('active');
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+
+        function showDashboard() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('registerScreen').style.display = 'none';
+
+            if (currentUser.isAdmin) {
+                document.getElementById('adminDashboard').classList.add('active');
+                document.getElementById('userDashboard').classList.remove('active');
+                document.getElementById('adminUsername').textContent = currentUser.username;
+                loadAdminDashboard();
+            } else {
+                document.getElementById('userDashboard').classList.add('active');
+                document.getElementById('adminDashboard').classList.remove('active');
+                document.getElementById('currentUsername').textContent = currentUser.username;
+                loadUserBooks();
+                updateUserStats();
+            }
+        }
+
+        // ========== USER DASHBOARD ==========
+        document.getElementById('bookForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const book = {
+                id: Date.now(),
+                title: document.getElementById('bookTitle').value,
+                author: document.getElementById('bookAuthor').value,
+                pages: parseInt(document.getElementById('bookPages').value),
+                addedDate: new Date().toISOString()
+            };
+
+            currentUser.books.push(book);
+            allUsers[currentUser.username] = currentUser;
+            saveUsers();
+            saveCurrentUser();
+
+            document.getElementById('bookForm').reset();
+            loadUserBooks();
+            updateUserStats();
+        });
+
+        function loadUserBooks() {
+            const container = document.getElementById('userBooks');
+            if (!currentUser.books || currentUser.books.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>Pradėkite pridėdami pirminę knygą! 📚</p></div>';
+                return;
+            }
+
+            container.innerHTML = currentUser.books.map(book => `
+                <div class="book-item">
+                    <div class="book-info">
+                        <div class="book-title">${book.title}</div>
+                        <div class="book-details">${book.author}</div>
+                    </div>
+                    <div class="book-pages">${book.pages}</div>
+                    <button class="btn-delete" onclick="deleteBook(${book.id})">Ištrinti</button>
+                </div>
+            `).join('');
+        }
+
+        function deleteBook(bookId) {
+            currentUser.books = currentUser.books.filter(b => b.id !== bookId);
+            allUsers[currentUser.username] = currentUser;
+            saveUsers();
+            saveCurrentUser();
+            loadUserBooks();
+            updateUserStats();
+        }
+
+        function updateUserStats() {
+            const stats = document.getElementById('userStats');
+            const totalBooks = currentUser.books.length;
+            const totalPages = currentUser.books.reduce((sum, book) => sum + book.pages, 0);
+
+            if (totalBooks === 0) {
+                stats.innerHTML = '<p style="text-align: center; color: var(--primary-light);">Dar nėra pridėtų knygų</p>';
+            } else {
+                stats.innerHTML = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 2em; color: var(--primary); margin: 15px 0;"><strong>${totalBooks}</strong></div>
+                        <div style="color: var(--primary-light); margin-bottom: 10px;">Perskaitytos knygos</div>
+                        <hr style="border: none; border-top: 2px solid var(--border); margin: 15px 0;">
+                        <div style="font-size: 2em; color: var(--primary); margin: 15px 0;"><strong>${totalPages}</strong></div>
+                        <div style="color: var(--primary-light);">Iš viso puslapių</div>
+                    </div>
+                `;
+            }
+        }
+
+        // ========== ADMIN DASHBOARD ==========
+        function loadAdminDashboard() {
+            updateAdminStats();
+            loadTopReaders();
+            loadReportTable();
+            loadUsersTable();
+            loadAllBooksTable();
+        }
+
+        function updateAdminStats() {
+            let totalUsers = 0;
+            let totalBooks = 0;
+            let totalPages = 0;
+
+            for (let username in allUsers) {
+                if (username !== ADMIN_USERNAME) {
+                    totalUsers++;
+                    totalBooks += allUsers[username].books.length;
+                    totalPages += allUsers[username].books.reduce((sum, book) => sum + book.pages, 0);
+                }
+            }
+
+            document.getElementById('totalUsers').textContent = totalUsers;
+            document.getElementById('totalBooks').textContent = totalBooks;
+            document.getElementById('totalPages').textContent = totalPages;
+        }
+
+        function loadReportTable() {
+            const tbody = document.getElementById('reportBody');
+            const rows = [];
+
+            for (let username in allUsers) {
+                if (username === ADMIN_USERNAME) continue;
+                const user = allUsers[username];
+                const totalBooks = user.books.length;
+                const totalPages = user.books.reduce((sum, book) => sum + book.pages, 0);
+                const avgPages = totalBooks > 0 ? Math.round(totalPages / totalBooks) : 0;
+
+                rows.push(`
+                    <tr>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>${totalBooks}</td>
+                        <td>${totalPages}</td>
+                        <td>${avgPages}</td>
+                    </tr>
+                `);
+            }
+
+            tbody.innerHTML = rows.length > 0 ? rows.join('') : '<tr><td colspan="5" style="text-align: center; color: var(--primary-light);">Nėra duomenų</td></tr>';
+        }
+
+        function loadUsersTable() {
+            const tbody = document.getElementById('usersBody');
+            const rows = [];
+
+            for (let username in allUsers) {
+                if (username === ADMIN_USERNAME) continue;
+                const user = allUsers[username];
+                const date = new Date(user.registeredDate).toLocaleDateString('lt-LT');
+
+                rows.push(`
+                    <tr>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td>${date}</td>
+                    </tr>
+                `);
+            }
+
+            tbody.innerHTML = rows.length > 0 ? rows.join('') : '<tr><td colspan="3" style="text-align: center; color: var(--primary-light);">Nėra duomenų</td></tr>';
+        }
+
+        function loadAllBooksTable() {
+            const tbody = document.getElementById('allBooksBody');
+            const rows = [];
+
+            for (let username in allUsers) {
+                if (username === ADMIN_USERNAME) continue;
+                const user = allUsers[username];
+                user.books.forEach(book => {
+                    rows.push(`
+                        <tr>
+                            <td>${book.title}</td>
+                            <td>${book.author}</td>
+                            <td>${user.username}</td>
+                            <td>${book.pages}</td>
+                        </tr>
+                    `);
+                });
+            }
+
+            tbody.innerHTML = rows.length > 0 ? rows.join('') : '<tr><td colspan="4" style="text-align: center; color: var(--primary-light);">Nėra duomenų</td></tr>';
+        }
+
+        function switchAdminTab(tab) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+
+            const tabMap = {
+                'statistics': { element: 'statisticsTab', button: 0 },
+                'report': { element: 'reportTab', button: 1 },
+                'users': { element: 'usersTab', button: 2 },
+                'all-books': { element: 'allBooksTab', button: 3 },
+                'export': { element: 'exportTab', button: 4 }
+            };
+
+            if (tabMap[tab]) {
+                document.getElementById(tabMap[tab].element).classList.add('active');
+                document.querySelectorAll('.tab-button')[tabMap[tab].button].classList.add('active');
+                
+                if (tab === 'statistics') loadTopReaders();
+                if (tab === 'report') loadReportTable();
+                if (tab === 'users') loadUsersTable();
+                if (tab === 'all-books') loadAllBooksTable();
+            }
+        }
+
+        function loadTopReaders() {
+            const stats = [];
+            
+            for (let username in allUsers) {
+                if (username === ADMIN_USERNAME) continue;
+                const user = allUsers[username];
+                const totalBooks = user.books.length;
+                const totalPages = user.books.reduce((sum, book) => sum + book.pages, 0);
+                const avgPages = totalBooks > 0 ? Math.round(totalPages / totalBooks) : 0;
+                
+                stats.push({
+                    username,
+                    totalBooks,
+                    totalPages,
+                    avgPages
+                });
+            }
+            
+            stats.sort((a, b) => b.totalBooks - a.totalBooks);
+            const top10 = stats.slice(0, 10);
+
+            const tbody = document.getElementById('topReadersBody');
+            if (top10.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--primary-light);">Nėra duomenų</td></tr>';
+                return;
+            }
+
+            const medals = ['🥇', '🥈', '🥉'];
+            tbody.innerHTML = top10.map((stat, index) => `
+                <tr>
+                    <td style="text-align: center; font-size: 1.3em;">${medals[index] || (index + 1)}</td>
+                    <td><strong>${stat.username}</strong></td>
+                    <td style="text-align: center;"><span style="background: var(--primary); color: white; padding: 6px 12px; border-radius: 20px; font-weight: 600;">${stat.totalBooks}</span></td>
+                    <td style="text-align: center;"><strong>${stat.totalPages}</strong></td>
+                    <td style="text-align: center;">${stat.avgPages} psl.</td>
+                </tr>
+            `).join('');
+
+            // Update statistics
+            let totalBooks = 0;
+            let totalPages = 0;
+            stats.forEach(stat => {
+                totalBooks += stat.totalBooks;
+                totalPages += stat.totalPages;
+            });
+            document.getElementById('statTotalBooks').textContent = totalBooks;
+            document.getElementById('statTotalPages').textContent = totalPages;
+        }
+
+        // ========== EXCEL EXPORT ==========
+        async function exportToExcel(type) {
+            try {
+                // Fetch SheetJS library
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js';
+                script.onload = function() {
+                    const wb = XLSX.utils.book_new();
+                    
+                    if (type === 'detailed') {
+                        createDetailedReport(wb);
+                    } else if (type === 'leaders') {
+                        createLeadersReport(wb);
+                    } else if (type === 'books') {
+                        createBooksReport(wb);
+                    } else if (type === 'users') {
+                        createUsersReport(wb);
+                    }
+                    
+                    XLSX.writeFile(wb, `mano-skaitymas-${type}-${new Date().toISOString().split('T')[0]}.xlsx`);
+                };
+                document.head.appendChild(script);
+            } catch (error) {
+                alert('Klaida eksportavimo metu: ' + error.message);
+            }
+        }
+
+        function createDetailedReport(wb) {
+            const data = [['Naudotojas', 'El. Paštas', 'Perskaitytos Knygos', 'Iš viso Puslapių', 'Vidutinė Knyga (psl.)', 'Registracijos Data']];
+            
+            for (let username in allUsers) {
+                if (username === ADMIN_USERNAME) continue;
+                const user = allUsers[username];
+                const totalBooks = user.books.length;
+                const totalPages = user.books.reduce((sum, book) => sum + book.pages, 0);
+                const avgPages = totalBooks > 0 ? Math.round(totalPages / totalBooks) : 0;
+                const regDate = new Date(user.registeredDate).toLocaleDateString('lt-LT');
+                
+                data.push([user.username, user.email, totalBooks, totalPages, avgPages, regDate]);
+            }
+            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            ws['!cols'] = [{wch: 15}, {wch: 25}, {wch: 18}, {wch: 18}, {wch: 18}, {wch: 15}];
+            
+            // Format header
+            for (let i = 0; i < 6; i++) {
+                const cell = ws[XLSX.utils.encode_col(i) + '1'];
+                if (cell) {
+                    cell.s = {
+                        fill: {fgColor: {rgb: '8B6F47'}},
+                        font: {bold: true, color: {rgb: 'FFFFFF'}},
+                        alignment: {horizontal: 'center'}
+                    };
+                }
+            }
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Ataskaita');
+        }
+
+        function createLeadersReport(wb) {
+            const stats = [];
+            
+            for (let username in allUsers) {
+                if (username === ADMIN_USERNAME) continue;
+                const user = allUsers[username];
+                const totalBooks = user.books.length;
+                const totalPages = user.books.reduce((sum, book) => sum + book.pages, 0);
+                const avgPages = totalBooks > 0 ? Math.round(totalPages / totalBooks) : 0;
+                
+                stats.push({
+                    username,
+                    totalBooks,
+                    totalPages,
+                    avgPages
+                });
+            }
+            
+            stats.sort((a, b) => b.totalBooks - a.totalBooks);
+            const data = [['Vieta', 'Naudotojas', 'Perskaitytos Knygos', 'Iš viso Puslapių', 'Vidutinė Knyga (psl.)']];
+            
+            stats.slice(0, 10).forEach((stat, index) => {
+                data.push([index + 1, stat.username, stat.totalBooks, stat.totalPages, stat.avgPages]);
+            });
+            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            ws['!cols'] = [{wch: 8}, {wch: 20}, {wch: 18}, {wch: 18}, {wch: 18}];
+            
+            // Format header
+            for (let i = 0; i < 5; i++) {
+                const cell = ws[XLSX.utils.encode_col(i) + '1'];
+                if (cell) {
+                    cell.s = {
+                        fill: {fgColor: {rgb: '6B9E5C'}},
+                        font: {bold: true, color: {rgb: 'FFFFFF'}},
+                        alignment: {horizontal: 'center'}
+                    };
+                }
+            }
+            
+            // Bold first 3 places
+            for (let i = 0; i < Math.min(3, stats.length); i++) {
+                const cell = ws['A' + (i + 2)];
+                if (cell) {
+                    cell.s = {font: {bold: true, size: 14}};
+                }
+            }
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Lyderiai');
+        }
+
+        function createBooksReport(wb) {
+            const data = [['Knygos Pavadinimas', 'Autorius', 'Naudotojas', 'Puslapiai']];
+            
+            for (let username in allUsers) {
+                if (username === ADMIN_USERNAME) continue;
+                const user = allUsers[username];
+                user.books.forEach(book => {
+                    data.push([book.title, book.author, user.username, book.pages]);
+                });
+            }
+            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            ws['!cols'] = [{wch: 30}, {wch: 20}, {wch: 15}, {wch: 12}];
+            
+            // Format header
+            for (let i = 0; i < 4; i++) {
+                const cell = ws[XLSX.utils.encode_col(i) + '1'];
+                if (cell) {
+                    cell.s = {
+                        fill: {fgColor: {rgb: 'D4A574'}},
+                        font: {bold: true, color: {rgb: 'FFFFFF'}},
+                        alignment: {horizontal: 'center'}
+                    };
+                }
+            }
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Knygos');
+        }
+
+        function createUsersReport(wb) {
+            const data = [['Naudotojo Vardas', 'El. Paštas', 'Registracijos Data', 'Perskaitytos Knygos', 'Iš viso Puslapių']];
+            
+            for (let username in allUsers) {
+                if (username === ADMIN_USERNAME) continue;
+                const user = allUsers[username];
+                const totalBooks = user.books.length;
+                const totalPages = user.books.reduce((sum, book) => sum + book.pages, 0);
+                const regDate = new Date(user.registeredDate).toLocaleDateString('lt-LT');
+                
+                data.push([user.username, user.email, regDate, totalBooks, totalPages]);
+            }
+            
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            ws['!cols'] = [{wch: 20}, {wch: 25}, {wch: 18}, {wch: 18}, {wch: 18}];
+            
+            // Format header
+            for (let i = 0; i < 5; i++) {
+                const cell = ws[XLSX.utils.encode_col(i) + '1'];
+                if (cell) {
+                    cell.s = {
+                        fill: {fgColor: {rgb: '7B9FD6'}},
+                        font: {bold: true, color: {rgb: 'FFFFFF'}},
+                        alignment: {horizontal: 'center'}
+                    };
+                }
+            }
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Naudotojai');
+        }
+
+        // Search functionality
+        document.getElementById('searchUsers').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const tbody = document.getElementById('reportBody');
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const username = row.cells[0].textContent.toLowerCase();
+                row.style.display = username.includes(query) ? '' : 'none';
+            });
+        });
+
+        document.getElementById('searchBooks').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const tbody = document.getElementById('allBooksBody');
+            const rows = tbody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const title = row.cells[0].textContent.toLowerCase();
+                const author = row.cells[1].textContent.toLowerCase();
+                row.style.display = (title.includes(query) || author.includes(query)) ? '' : 'none';
+            });
+        });
+
+        // Initial check
+        if (currentUser) {
+            showDashboard();
+        }
+    </script>
+</body>
+</html>
